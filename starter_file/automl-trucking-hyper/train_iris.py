@@ -30,8 +30,8 @@ def main():
 
     parser.add_argument('--tol', type=str, default='0.0001',
                         help='Tolerance for stopping')
-    parser.add_argument('--penalty', type=float, default=1,
-                        help='Penalty parameter of the error term')
+    parser.add_argument('--coefficient', type=float, default=1,
+                        help='Coefficient parameter')
     parser.add_argument(
         '--input-data',
         type=str,
@@ -70,7 +70,7 @@ def main():
 
     # training a linear SVM classifier
     from sklearn.svm import LinearSVC
-    clf = OneVsRestClassifier(LinearSVC(class_weight='balanced', verbose=1, max_iter=2000, C=args.penalty, tol=args.tol), n_jobs=-1)
+    clf = OneVsRestClassifier(LinearSVC(class_weight='balanced', verbose=1, max_iter=2000, C=args.coefficient, tol=args.tol), n_jobs=-1)
     #score = cross_val_score(clf, X, y, cv=5, scoring='roc_auc_ovr_weighted').mean()
     #print('AUC Weighted of SVM classifier {:.2f}'.format(score))
     #run.log('AUC Weighted', np.float(score))
