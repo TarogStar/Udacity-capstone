@@ -41,6 +41,7 @@ The model that I deployed was the AzureML model.  It had better accuracy by a bi
 
 ## Screen Recording
 The following screen cast shows the model being deployed and run from a notebook.
+
 [![Screen Cast Link](https://i9.ytimg.com/vi_webp/OqJ13ncPTAQ/mqdefault.webp?time=1613265600000&sqp=CMD1oYEG&rs=AOn4CLBG1kvcpMTFriVwi6Z95ud7u8drZA)](https://youtu.be/OqJ13ncPTAQ)
 
 
