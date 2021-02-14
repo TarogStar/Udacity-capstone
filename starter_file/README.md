@@ -25,7 +25,7 @@ I tried several different methods of data analysis to try and determine the best
 ### Results
 Using a categorization model targeting the weighted Area Under the Curve gave a final value of 98.6 and Accuracy of 97.4%
 
-![AutoML Details Widget](AutoMLDetailsWidget.png)
+![AutoML Details Widget](AutoMLDetailsWidgetpng.png)
 
 ## Hyperparameter Tuning
 I attempted to use SVC originally, but with the data size it ended up running for a longer time that is possible to finish the project.  I learned that linear_SVC has a much quicker time.  I also found that scaling the data can make a big performance difference, so I made certain to scale the data before trying to fit the model.  Linear SVC has a tolerance parameter which decideds how quickly the model is stopped and a C Regularization parameters.  Max iterations was also adjusted to allow more time to find the proper model fit.
@@ -34,16 +34,15 @@ I attempted to use SVC originally, but with the data size it ended up running fo
 ### Results
 Model accuracy ranged quite a bit, from 56% to 96% depending on the parameters
 
-![Details Widget](DetailsWidgetpng.png)
+![Details Widget](DetailsWidget.png)
 
 ## Model Deployment
 The model that I deployed was the AzureML model.  It had better accuracy by a bit, but also handled the sparse data better for AUC fit. 
 
 ## Screen Recording
-*TODO* Provide a link to a screen recording of the project in action. Remember that the screencast should demonstrate:
-- A working model
-- Demo of the deployed  model
-- Demo of a sample request sent to the endpoint and its response
+The following screen cast shows the model being deployed and run from a notebook.
+![Screen Cast Link](https://youtu.be/OqJ13ncPTAQ)
+
 
 ## Standout Suggestions
  I tried to run some calculations on the custom hyperparameter model to provide AUC as well, but it was taking multiple days to run the suggested code.  If there was more time it might be possible to get a better model with manual model choices, but the amount of time required to gather the information and run the models is orders of time longer.  What I can accomplish using AutoML within a week is quite amazing.  I did learn quite a bit about data cleaning and scaling that I could apply to make the AutoML runs even better while researching how to run the hyperparameter model.
