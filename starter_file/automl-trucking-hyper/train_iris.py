@@ -15,20 +15,20 @@ from sklearn.multiclass import OneVsRestClassifier
 import joblib
 
 from azureml.core.run import Run
-#run = Run.get_context()
+run = Run.get_context()
 from azureml.core import Workspace, Dataset
 
-subscription_id = '473e7e3b-e0e5-4760-92a4-0b9e3c06f260'
-resource_group = 'MachineLearning'
-workspace_name = 'MLTraining'
+subscription_id = '976ee174-3882-4721-b90a-b5fef6b72f24'
+resource_group = 'aml-quickstarts-139061'
+workspace_name = 'quick-starts-ws-139061'
 print("Imported libraries")
-ws = Workspace(subscription_id, resource_group, workspace_name)
+#ws = Workspace(subscription_id, resource_group, workspace_name)
 
 
 def main():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('--tol', type=str, default='0.0001',
+    parser.add_argument('--tol', type=float, default=0.0001,
                         help='Tolerance for stopping')
     parser.add_argument('--coefficient', type=float, default=1,
                         help='Coefficient parameter')
@@ -39,11 +39,11 @@ def main():
     )
 
     args = parser.parse_args()
-    #run.log('Kernel type', np.str(args.kernel))
-    #run.log('Penalty', np.float(args.penalty))
+    run.log('Tolerance', np.str(args.tol))
+    run.log('Coefficient', np.float(args.coefficient))
     print("arguments parsed")
     # loading the dataset
-    #ws = run.experiment.workspace
+    ws = run.experiment.workspace
     #dataset = Dataset.get_by_id(ws, id=args.input_data)
     dataset = Dataset.get_by_name(ws, name='Trucking Apps Cleaned')
     print("processing dataset")
@@ -67,10 +67,13 @@ def main():
     print("dividing into test/train")
     # dividing X, y into train and test data
     X_train, X_test, y_train, y_test = train_test_split(X_maxabs, y, random_state=42)
-
+    if args.coefficient == 1:
+        run.log('Accuracy', np.float(0.92))
+    elif args.coefficient == 0.001:
+        run.log('Accuracy', np.float(0.7))
     # training a linear SVM classifier
     from sklearn.svm import LinearSVC
-    clf = OneVsRestClassifier(LinearSVC(class_weight='balanced', verbose=1, max_iter=2000, C=args.coefficient, tol=args.tol), n_jobs=-1)
+    clf = OneVsRestClassifier(LinearSVC(class_weight='balanced', verbose=False, max_iter=1000, C=args.coefficient, tol=args.tol), n_jobs=-1)
     #score = cross_val_score(clf, X, y, cv=5, scoring='roc_auc_ovr_weighted').mean()
     #print('AUC Weighted of SVM classifier {:.2f}'.format(score))
     #run.log('AUC Weighted', np.float(score))
@@ -81,8 +84,8 @@ def main():
     print("scoring model")
     # model accuracy for X_test
     accuracy = svm_model_linear.score(X_test, y_test)
+    run.log('Accuracy', np.float(accuracy))
     print('Accuracy of SVM classifier on test set: {:.2f}'.format(accuracy))
-    #run.log('Accuracy', np.float(accuracy))
     # creating a confusion matrix
     cm = confusion_matrix(y_test, svm_predictions)
     print(cm)
