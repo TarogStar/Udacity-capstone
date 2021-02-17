@@ -41,7 +41,7 @@ The Details widget in action:
 ![Details Widget](DetailsWidget.png)
 
 The best model output parameters:
-
+![HyperParameter Best Model](BestModelHyperParameter.png)
 ## Model Deployment
 The model that I deployed was the AzureML model.  It had better accuracy by a bit, but also handled the sparse data better for AUC fit. 
 
