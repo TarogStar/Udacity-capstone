@@ -8,7 +8,7 @@ A major trucking company goes over thousands of applications per month.  These a
 The dataset needed to be created from several tables kept within a database to join the data provided on the application with the employment dates.  The data of hire was subtracted from the current date if they are still employed, or from the last date of employment if they are not currently employed.  The data then was uploaded in csv format to an Azure ML workspace for further analysis.
 
 ## Dataset
-The dataset does not include any personally identfying information.  Zip Code is provided as well as a fico score and responses to questions on driving history and driver license status.  As the exact method of accessing or uploading the data is not important, this dataset will not be publicly available after this project is complete.
+The dataset does not include any personally identfying information.  Zip Code is provided as well as a fico score and responses to questions on driving history and driver license status.  As the exact method of accessing or uploading the data is not important, this dataset will not be publicly available after this project is complete.  The data was originally created as a sql query to gether data.  It was exported to Excel and then saved as a csv file.  I uploaded it to Google Drive at a link currently accessible.  As I found issues with some of the fields for processing on the hyperparameter side I found that the tools provided through Azure Pipelines were useful to fill in missing feature values and convert feature values to more standard labels.  The data was processed into blob storage, downloaded as a csv and then uploaded again as a new version to Google Drive.  After the data has been imported once as a dataset, the code will look for the properly named dataset which processes several minutes faster when the code reaches that point.
 
 ### Overview
 The dataset is from a major trucking company. severa tables were joined together to provide a consistent dataset.  The data is fairly lopsided as most applications are not hired, so a majority of the data has zero months of employment.
@@ -43,7 +43,88 @@ The Details widget in action:
 The best model output parameters:
 ![HyperParameter Best Model](BestModelHyperParameter.png)
 ## Model Deployment
-The model that I deployed was the AzureML model.  It had better accuracy by a bit, but also handled the sparse data better for AUC fit. 
+The model that I deployed was the AzureML model.  It had better accuracy by a bit, but also handled the sparse data better for AUC fit. I was able to deploy the model using python that finds the best child run of the AutoML run.  Using the run object I registered the model with the Azure workspace.  As this used a custom dataset I provided a custom score script that was slightly modified version of the script supplied by Microsoft when automatically deployed through the ui.  I did hit some errors when it was originally deployed, and used the logging output to correct the endpoint script that was run. As this was run within Azure AutoML I cloned a standard environment to be able to deploy the script with an Inference Configuration.  The model was then deployed to an Azure Container Instance and queried. 
+
+## Query the model
+The following code will allow querying the endpoint, as long as the scoring_uri and key are updated as necessary after deploying the endpoint.  Sample data is included which would return a result of zero.
+```
+import json
+from collections import namedtuple
+import pandas as pd
+#dataString = dataset.take(1).to_pandas_dataframe().to_json()
+#service = azureml.core.Webservice(ws,'best-model-service-309')
+scoring_uri = 'http://9e6421ff-e5b4-4a6a-9b1e-da3eb5b91ff8.westus.azurecontainer.io/score'
+# If the service is authenticated, set the key or token
+key = '8b9M2mxheVcli4xUjlkKUy6hM9Lz8hQD'
+
+data = [
+        {"app.cre_AppId":4054803,
+        "app.cre_Experience":0.0,
+        "app.cre_MonthsExperienceinPast36":0.0,
+        "app.cre_PardotScore":"object",
+        "app.cre_Veteran":171140000,
+        "app.cre_WantTeamDriver":0,
+        "app.cre_DriverApplicationSource":"object",
+        "app.cre_RecordSource":"{F13D1BBF-06FE-E611-80DA-0050569526E6}",
+        "app.cre_CDLType":171140000,
+        "app.cre_AccidentInformationProvided":False,
+        "app.cre_ContactInformationProvided":False,
+        "app.cre_CriminalInformationProvided":False,
+        "app.cre_TicketInformationProvided":False,
+        "app.cre_ScoreCurrent":2.0,
+        "app.cre_ScoreInitial":4,
+        "app.cre_VettingStatus":171140002,
+        "app.cre_AccidentCount":0,
+        "app.cre_DUICount":0,
+        "app.cre_MovingViolationCount":0,
+        "app.cre_SoftFicoScore":0,
+        "app.cre_CDLCLPExp":"object",
+        "app.cre_FelonyCount":0,
+        "address1_postalcode":45011,
+        "cre_referralcode":"object",
+        "cre_referralestimatedexperience":0,
+        "cre_referralsourceid":"object",
+        "cre_accidentcount":0,
+        "cre_canpassdrugtest":"true",
+        "cre_cdlclass":"object",
+        "cre_cdlexp":0,
+        "cre_duicount":"example_value",
+        "cre_hascdl":"false",
+        "cre_honorablydischarged":"object",
+        "cre_movingviolationcount":0,
+        "cre_recordsource":7088,
+        "cre_veteran":"false",
+        "cre_washonorablydischarged":1,
+        "cre_minsoftficoscore":"example_value",
+        "cre_softficoscore":"example_value",
+        "cre_militarydischargedon":"2000-1-1",
+        "cre_recklessdrivingcount":0,
+        "cre_driverchewtobacco":0,
+        "cre_driversmoker":0,
+        "cre_drivervapeuser":0,
+        "cre_teamchewtobaccousers":0,
+        "cre_teamoppositegender":"example_value",
+        "cre_teamsmokers":0,
+        "cre_teamvapeusers":0,
+        "cre_teamgender":0,
+        "cre_donottext":True}
+    ]
+input_payload = json.dumps({
+    'data': data
+})
+print(input_payload)
+with open("data.json", "w") as _f:
+    _f.write(input_data)
+
+# Set the content type
+headers = {'Content-Type': 'application/json'}
+# If authentication is enabled, set the authorization header
+headers['Authorization'] = f'Bearer {key}'
+
+# Make the request and display the response
+resp = requests.post(scoring_uri, input_data, headers=headers)
+print(resp.json())
+```
 
 ## Screen Recording
 The following screen cast shows the model being deployed and run from a notebook.
