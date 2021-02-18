@@ -4,6 +4,8 @@
 
 A major trucking company goes over thousands of applications per month.  These applications are tracked over time and are linked to a record that maintains employment status.  Taking the number of months of employment and trying to predict that value based on the input of the application may be able to identify key applications where the best recruiters should focus their time.  They currently have an AI model processing the data, but don't fully trust the results.  The data is NOT publicly available, but a limited amount was given to perform an analysis to determine what model or features might be relevant to the hiring process.  I pulled the data myself from a project that I am currently working on and so it cannot be externally verified, nor can the exact company be named.  The features here are derived from the data collected during the application process.  All personally identifiable information has been removed.  An unique identifier is included, but should be ignored for processing purposes.  The features include such things as the amount of previous truck driving experience and whether they currently have a Commercial Driver's License.
 
+Using Azure AutoML and HyperParameter tuning a model can be developed that will be able to be applied to future applications to help the recruiter team focus its efforts on those that are most likely to be hired and work for the company longer.  Each application submitted will then be scored by the model that can best predict the most likely outcome to prioritize the work.  This will not be completely accurate, but as there are many applicants, prioritizing higher value applicants will help generate more revenue for the recruitment effort.
+
 ## Project Set Up and Installation
 The dataset needed to be created from several tables kept within a database to join the data provided on the application with the employment dates.  The data of hire was subtracted from the current date if they are still employed, or from the last date of employment if they are not currently employed.  The data then was uploaded in csv format to an Azure ML workspace for further analysis.
 
@@ -23,7 +25,18 @@ The dataset was uploaded to the machine learning workspace as part of the initia
 I tried several different methods of data analysis to try and determine the best settings.  As the number of months is a number, a regression seemed the most logical initially, but that provided very low accuracy, so a Classification type was chosen to bucket the information.  The correlation coefficient was fairly low for regression however.  I also identified several factors that may have just been random chance and removed them from analysis, such as an application identification number.  I also removed columns that were scoring from other models as this model may replace those items.  As there is a lot of data, enabling early stopping is critical.  The criteria to maximize in this case was the AUC_weighted, which helps deal sparse data by weighting the data and fitting the data under the standard bell curve.  The Max Concurrent Iterations is limited to 4 as more nodes cannot be activated, and the experiment timeout ensures that something will be returned in a reasonable amount of time.
 
 ### Results
-Using a categorization model targeting the weighted Area Under the Curve gave a final value of 98.6 and Accuracy of 97.4%
+Azure AutoML found that a VotingEnsemble collaboration of models was the best model.  The model uses 6 different other models underneath with a weight.  LightGBM with a weight of 53% will be the most trusted piece, followed by two XGBoostClassifier models with 13% each.  Three other at about 7% each with 2 other XGBoostClassifiers and 1 Random Forest.
+The following properties are in the model:
+        "ensembled_algorithms": "['XGBoostClassifier', 'XGBoostClassifier', 'LightGBM', 'XGBoostClassifier', 'XGBoostClassifier', 'RandomForest']",
+        "ensemble_weights": "[0.13333333333333333, 0.13333333333333333, 0.5333333333333333, 0.06666666666666667, 0.06666666666666667, 0.06666666666666667]",
+        "best_individual_pipeline_score": "0.9802816408800817",
+        "best_individual_iteration": "1", 
+The model metrics returned are:
+    Accuracy 0.97004
+    AUC macro 0.94676
+    AUC micro 0.99909
+    AUC weighted 0.98165
+
 The Run Details Widget in Action:
 ![AutoML Details Widget](AutoMLDetailsWidgetpng.png)
 
@@ -35,7 +48,7 @@ I attempted to use SVC originally, but with the data size it ended up running fo
 
 
 ### Results
-Model accuracy ranged quite a bit, from 56% to 96% depending on the parameters
+Model accuracy ranged quite a bit, from 56% to 96% depending on the parameters.  The best model results were returned using a high coefficient, which was always the biggest factor, and a higher tolerance seemed to also push the accuracy up.  The best model tested used a 10 as the C coefficient and a tolerance of 0.00034.  The model may be able to be adjusted slightly better by adjusting the max number of iterations and focusing more on higher C and tolerance values. An accuracy of 96.4% seemed to be the highest achieved.
 
 The Details widget in action:
 ![Details Widget](DetailsWidget.png)
